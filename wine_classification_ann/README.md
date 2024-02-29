@@ -29,7 +29,7 @@ This former homework assignment uses an wine dataset for predicting origin of wi
 
 ### Environment Setup
 
-For information on environment setup please see the README.md file in the parent folder: [Predictive_Analytics_Projects](Predictive_Analytics_Projects/)
+For information on environment setup please see the README.md file in the parent folder: [Predictive_Analytics_Projects](../README.md)
 
 ### Usage
 
