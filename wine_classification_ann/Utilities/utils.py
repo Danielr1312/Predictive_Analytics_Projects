@@ -1,4 +1,6 @@
 import torch
+from itertools import product
+import re
 
 class StopCriteria(object):
     def __init__(self, patience = 5):
@@ -30,23 +32,22 @@ class StopCriteria(object):
 
         return False
     
-def ConfusionMatrix(model, output, target):
-    pred = model.prediction(output)
-    targets = model.prediction(target)
+def ConfusionMatrix(pred, targets):
     
-    pred = torch.unsqueeze(pred, 1)
-    targets = torch.unsqueeze(targets, 1)
-    
-    combined = torch.cat((pred, targets), 1)
-    #comb_transpose = torch.transpose(combined) # we get (pred, target) pairs as we go down the rows
-    
-    CM = torch.zeros(3,3, dtype = torch.long)
-    for i in range(len(pred)):
-        if combined[i, 0] == combined[i,1]:
-            CM[combined[i, 0] - 1, combined[i, 0] - 1] += 1
-        else:
-            CM[combined[i, 0] - 1, combined[i, 1] - 1] += 1
-                    
+    # convert targets from one-hot encoding to labels if necessary
+    if targets.shape[1] > 1:
+        targets = torch.argmax(targets, 1)
+
+    # Get the number of unique classes from the targets tensor
+    num_classes = max(targets.max(), pred.max()) + 1
+
+    # Initialize the confusion matrix
+    CM = torch.zeros(num_classes, num_classes, dtype=torch.int64)
+
+    # Fill the confusion matrix
+    for t, p in zip(targets, pred):
+        CM[t,p] += 1
+
     return CM
 
 def convert_results_to_dict(params, results):
@@ -92,3 +93,49 @@ def convert_all_results(params, results_dict):
     for key, result_lists in results_dict.items():
         converted_results[key] = convert_results_to_dict(params, result_lists)
     return converted_results
+
+def find_best_model(experiments_dict, accuracy_metric='test_accuracy', loss_metric='test_loss'):
+
+    valid_loss_keys = ['train_loss', 'val_loss', 'test_loss']
+    valid_accuracy_keys = ['training_accuracy', 'validation_accuracy', 'test_accuracy']
+
+    if accuracy_metric not in valid_accuracy_keys or loss_metric not in valid_loss_keys:
+        raise ValueError("Invalid accuracy or loss metric")
+    
+    perfect_models = []  # To store param_ids of models with perfect accuracy
+    best_loss = float('inf')  # Start with the worst case
+    best_param_id = None  # To store the best parameter id
+    best_experiment = None  # To store the best experiment name
+
+    # First, collect all models with perfect accuracy
+    for experiment_name, results_list in experiments_dict.items():
+        for result_dict in results_list:
+            for param_id, results in result_dict.items():
+                if results[accuracy_metric] == 1.0:  # Assuming perfect accuracy is represented as 1.0
+                    perfect_models.append((experiment_name, param_id, results[loss_metric]))
+
+    # If there are models with perfect accuracy, find the one with the lowest test loss
+    if perfect_models:
+        for experiment_name, param_id, loss in perfect_models:
+            if loss < best_loss:
+                best_loss = loss
+                best_param_id = param_id
+                best_experiment = experiment_name
+                best_accuracy = 1.0  # Perfect accuracy
+    else:
+        # If no models have perfect accuracy, find the best accuracy and corresponding loss as before
+        best_accuracy = -1  # Start with the worst case
+        for experiment_name, results_list in experiments_dict.items():
+            for result_dict in results_list:
+                for param_id, results in result_dict.items():
+                    if results[accuracy_metric] > best_accuracy:
+                        best_accuracy = results[accuracy_metric]
+                        best_loss = results[loss_metric]
+                        best_param_id = param_id
+                        best_experiment = experiment_name
+
+    if best_experiment is None or best_param_id is None:
+        print(f"Current best experiment: {best_experiment}, best param_id: {best_param_id}, best accuracy: {best_accuracy}, best loss: {best_loss}")
+        raise ValueError("Best experiment and/or parameter ID is None")
+
+    return best_experiment, best_param_id, best_accuracy, best_loss, len(perfect_models) > 0
