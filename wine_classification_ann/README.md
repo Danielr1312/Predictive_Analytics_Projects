@@ -1,4 +1,5 @@
-# Wine Classification Artificial Neural Network
+# Table of Contents
+- [Table of Contents](#table-of-contents)
 - [Wine Classification Artificial Neural Network](#wine-classification-artificial-neural-network)
   - [Dataset and Dataset Info](#dataset-and-dataset-info)
   - [Project Goal and Structure](#project-goal-and-structure)
@@ -9,6 +10,7 @@
     - [History](#history)
     - [Future Work](#future-work)
 
+# Wine Classification Artificial Neural Network
 
 ## Dataset and Dataset Info
 
