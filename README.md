@@ -16,7 +16,7 @@ Welcome to my collection of predictive analytics projects. This repository is de
 
 Below is the list of projects currently included in this repository:
 
-- **[Adult Income Classification](./adult_income_classification)**: This project focuses on predicting whether an individual's income exceeds $50K/year based on census data. It covers data cleaning, exploratory data analysis, feature engineering, and model building.
+- **[Adult Income Classification](./adult_income_classification)**: This project focuses on predicting whether an individual's income exceeds $50K/year based on census [data](https://archive.ics.uci.edu/dataset/2/adult). It covers data cleaning, exploratory data analysis, feature engineering, and model building.
 - **[Wine Classification ANN](./wine_classification_ann)**: This was a former homework assignment utilizing [Wine data](https://archive.ics.uci.edu/dataset/109/wine) which looks into how hyperparameters impact training and performance of artificial neural networks
 
 ## Environment Setup
